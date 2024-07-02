@@ -18,43 +18,111 @@ const upload = multer({ storage: storage }); // handling files in memory
 
 app.use(express.static('public')); // used for serving html/css files in public directory
 
-// express route handler for file uploads to server
+//// connection to MySQL database
+//const db = mysql.createConnection({
+//    host: 'host.docker.internal', // localhost when running without docker
+//    //host: 'mysql-container', // localhost when running without docker
+//    //host: 'my-mysql-container', // localhost when running without docker
+//    user: 'root', // username
+//    password: 'root', // password
+//    database: 'images_CC', // the mysql database that is created
+//});
+//// initialize connection to the database
+//const connectToDb = async () => {
+//    try {
+//        await db.promise().connect;
+//        console.log('Connected to MySQl database')
+//    } catch (error) {
+//        console.error('Database connection error: ', error)
+//    }
+//};
+//connectToDb();
+
+const pool = mysql.createPool({
+    host: 'mysql-container', // the name of the MySQL service/container
+    user: 'root',
+    password: 'root',
+    database: 'images',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+  });
+
+  io.on('connection', async (socket) => {
+    console.log('User is connected');
+    // perform actions when new user is connected 
+    try {
+        await Promise.all([
+            updateTotalHeadCount(),
+        ]);
+        console.log('All function executed succesfully');
+    } catch (error) {
+        console.log('Error executing functions: ', error)
+    }
+    // 'disconnect' event
+    socket.on('disconnect', () => {
+        // perform action when user disconnects
+      console.log('User is disconnected');
+    });
+});
+
+// Express route handler for file uploads to server
 app.post('/upload/:uploadZone', async (req, res) => {
   const uploadZone = req.params.uploadZone;
 
   const multerUpload = upload.single(`image${uploadZone}`);
 
   multerUpload(req, res, async (error) => {
-      if (error instanceof multer.MulterError) {
-          console.error('Multer error:', error);
-          return res.status(400).json({ error: 'Bad Request' });
-      } else if (error) {
-          console.error('Unexpected error:', error);
-          return res.status(500).json({ error: 'Internal Server Error' });
-      }
-      // uploaded file
-      const file = req.file;
-      // if a file is uploaded
-      if (file) {
-          const formData = new FormData();
-          formData.append('imageFileField', file.buffer, 'image');
-          const headers = formData.getHeaders();
+    if (error instanceof multer.MulterError) {
+      console.error('Multer error:', error);
+      return res.status(400).json({ error: 'Bad Request' });
+    } else if (error) {
+      console.error('Unexpected error:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
 
-          // make post request to head counting service http://localhost:8002/crowdy/image/count
-          // const response = await axios.post('http://172.20.0.3:8002/crowdy/image/count', formData, { headers });
-          const response = await axios.post('http://image-predict-container:8002/crowdy/image/count', formData, { headers });
-          // const response = await axios.post('http://localhost:8002/crowdy/image/count', formData, { headers });
-          console.log('Head counting response:', response.data.count);
-          
-          // prepare data to safe to the MySQL database
-          const image = file.buffer.toString('base64');
-          const creation_date = new Date();
+    // Uploaded file
+    const file = req.file;
 
-          const upload_zone = uploadZone
-          const head_count = response.data.count;
+    // If a file is uploaded
+    if (file) {
+      const formData = new FormData();
+      formData.append('imageFileField', file.buffer, 'image');
+      const headers = formData.getHeaders();
+
+      try {
+        // Make post request to head counting service
+        const response = await axios.post('http://image-predict-container:8002/crowdy/image/count', formData, { headers });
+        console.log('Head counting response:', response.data.count);
+
+        // Prepare data to save to the MySQL database
+        const image = file.buffer.toString('base64');
+        const creation_date = new Date();
+        const head_count = response.data.count;
+
+        // Save to MySQL database
+        pool.query(
+          'INSERT INTO images_table (image, creation_date, upload_zone, head_count) VALUES (?, ?, ?, ?)',
+          [image, creation_date, uploadZone, head_count],
+          (err, results) => {
+            if (err) {
+              console.error('Database insertion error:', err);
+              return res.status(500).json({ error: 'Database insertion error' });
+            }
+            console.log('Data saved successfully:', results);
+            res.status(200).json({ message: 'Image uploaded and data saved successfully', id: results.insertId });
+          }
+        );
+      } catch (err) {
+        console.error('Error in head counting service:', err);
+        res.status(500).json({ error: 'Error in head counting service' });
       }
+    } else {
+      res.status(400).json({ error: 'No file uploaded' });
+    }
   });
 });
+
 // start http server on port 3000
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

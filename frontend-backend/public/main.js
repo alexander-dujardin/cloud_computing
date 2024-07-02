@@ -1,3 +1,5 @@
+const socket = io();
+
 function uploadImage(uploadZone) {
     // get the file for the specific upload zone
     const fileInput = document.getElementById(`fileInput${uploadZone}`);
