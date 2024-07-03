@@ -1,21 +1,60 @@
 <!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <title>Cloud Computing</title>
-</head>
-<body>
-    <form id="uploadForm1" enctype="multipart/form-data">
-        <label for="fileInput1">Choose Image</label>
-        <input type="file" name="file1" id="fileInput1" accept="image/jpeg, image/jpg, image/png" />
-        <button type="button" class="custom-button" onclick="uploadImage(1)">Upload Image</button>
-      </form>
-      <img class="miniatureview" id="miniatureView1" alt="Image Loading..."/>
-      
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-      <script src="main.js"></script>
-</body>
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- style sheet -->
+		<link rel="stylesheet" type="text/css" href="styles.css">
+		<title>Cloud Computing Project</title>
+	</head>
+	<body>
+		<div class="camera-zone">
+			<!-- city region 1 -->
+			<h1>City Region 1</h1>
+			<!-- upload zone camera 1 -->
+			<form id="uploadForm1" enctype="multipart/form-data">
+				<label for="fileInput1">Choose Image</label>
+				<input type="file" name="file1" id="fileInput1" accept="image/jpeg, image/jpg, image/png" />
+				<button type="button" class="custom-button" onclick="uploadImage(1)">Upload Image</button>
+			</form>
+			<!-- last uploaded image camera 1 -->
+			<img class="miniatureview" id="miniatureView1" alt="Image Loading..."/>
+			<!-- last head count camera 1 -->
+			<!-- <p>Last Head Count: <span id="lastHeadCount1">0</span></p> -->
+		</div>
+		<div class="camera-zone">
+			<!-- city region 2 -->
+			<h1>City Region 2</h1>
+			<!-- upload zone camera 2 -->
+			<form id="uploadForm2" enctype="multipart/form-data">
+				<label for="fileInput2">Choose Image</label>
+				<input type="file" name="file2" id="fileInput2" accept="image/jpeg, image/jpg, image/png" />
+				<button type="button" class="custom-button" onclick="uploadImage(2)">Upload Image</button>
+			</form>
+			<!-- last uploaded image camera 2 -->
+			<img class="miniatureview" id="miniatureView2" alt="Image Loading..."/>
+			<!-- last head count camera 2 -->
+			<!-- <p>Last Head Count: <span id="lastHeadCount2">0</span></p> -->
+		</div>
+		<div class="camera-zone">
+			<!-- city region 3 -->
+			<h1>City Region 3</h1>
+			<!-- upload zone camera 3 -->
+			<form id="uploadForm3" enctype="multipart/form-data">
+				<label for="fileInput3">Choose Image</label>
+				<input type="file" name="file3" id="fileInput3" accept="image/jpeg, image/jpg, image/png" />
+				<button type="button" class="custom-button" onclick="uploadImage(3)">Upload Image</button>
+			</form>
+			<!-- last uploaded image camera 3 -->
+			<img class="miniatureview" id="miniatureView3" alt="Image Loading..."/>
+			<!-- last head count camera 3 -->
+			<!-- <p>Last Head Count: <span id="lastHeadCount3">0</span></p> -->
+		</div>
+		<!-- overall total head count -->
+		<!-- <p>Total Head Count: <span id="totalHeadCount">0</span></p> -->
+		<!-- scripts -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+		<script src="main.js"></script>
+	</body>
 </html>
