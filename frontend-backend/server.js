@@ -18,58 +18,56 @@ const upload = multer({ storage: storage }); // handling files in memory
 
 app.use(express.static('public')); // used for serving html/css files in public directory
 
-//// connection to MySQL database
-//const db = mysql.createConnection({
-//    host: 'host.docker.internal', // localhost when running without docker
-//    //host: 'mysql-container', // localhost when running without docker
-//    //host: 'my-mysql-container', // localhost when running without docker
-//    user: 'root', // username
-//    password: 'root', // password
-//    database: 'images_CC', // the mysql database that is created
-//});
-//// initialize connection to the database
-//const connectToDb = async () => {
-//    try {
-//        await db.promise().connect;
-//        console.log('Connected to MySQl database')
-//    } catch (error) {
-//        console.error('Database connection error: ', error)
-//    }
-//};
-//connectToDb();
+/*
+
+// connection to MySQL database
+const db = mysql.createConnection({
+    host: 'mysql-container',
+    user: 'root',
+    password: 'root',
+    database: 'images',
+});
+// initialize connection to the database
+const connectToDb = async () => {
+    try {
+    await db.promise().connect;
+    console.log('Connected to MySQl database')
+    } catch (error) {
+     console.error('Database connection error: ', error)
+}};
+connectToDb();
+
+*/
 
 const pool = mysql.createPool({
-    host: 'mysql-container', // the name of the MySQL service/container
+    host: 'mysql-container', // name of docker container with mysql db
     user: 'root',
     password: 'root',
     database: 'images',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-  });
+});
 
-  io.on('connection', async (socket) => {
+io.on('connection', async (socket) => {
     console.log('User is connected');
-    // perform actions when new user is connected 
     try {
         await Promise.all([
-          displayMiniatureView1(),
+          displayMiniatureView(1),
+          displayMiniatureView(2),
+          displayMiniatureView(3)
         ]);
         console.log('All function executed succesfully');
     } catch (error) {
-        console.log('Error executing functions: ', error)
+        console.error('Error executing functions: ', error);
     }
-    // 'disconnect' event
     socket.on('disconnect', () => {
-        // perform action when user disconnects
       console.log('User is disconnected');
     });
 });
 
-// Express route handler for file uploads to server
 app.post('/upload/:uploadZone', async (req, res) => {
   const uploadZone = req.params.uploadZone;
-
   const multerUpload = upload.single(`image${uploadZone}`);
 
   multerUpload(req, res, async (error) => {
@@ -81,7 +79,6 @@ app.post('/upload/:uploadZone', async (req, res) => {
           return res.status(500).json({ error: 'Internal Server Error' });
       }
 
-      // Uploaded file
       const file = req.file;
 
       // If a file is uploaded
@@ -126,21 +123,21 @@ app.post('/upload/:uploadZone', async (req, res) => {
   });
 });
 
-const displayMiniatureView1 = () => {
-  pool.query('SELECT image FROM images_table WHERE upload_zone = 1 ORDER BY creation_date DESC LIMIT 1', (err, result) => {
-      if (err) {
-          console.error('MySQL select error:', err);
-      } else if (result.length > 0) {
-          // Check if the result set is not empty
-          const imageBuffer = Buffer.from(result[0].image, 'base64');
+const displayMiniatureView = (uploadZone) => {
+    pool.query('SELECT image FROM images_table WHERE upload_zone = ? ORDER BY creation_date DESC LIMIT 1', [uploadZone], (err, result) => {
+        if (err) {
+            console.error('MySQL select error:', err);
+        } else if (result.length > 0) {
+            // Check if the result set is not empty
+            const imageBuffer = Buffer.from(result[0].image, 'base64');
 
-          // Convert Buffer to base64
-          const base64Image = imageBuffer.toString('base64');
-          io.emit('displayMiniatureView1', base64Image);
-      } else {
-          console.log('No data found in the database for the specified condition.');
-      }
-  });
+            // Convert Buffer to base64
+            const base64Image = imageBuffer.toString('base64');
+            io.emit(`displayMiniatureView${uploadZone}`, base64Image);
+        } else {
+            console.log('No data found in the database for the specified condition.');
+        }
+    });
 };
 
 // start http server on port 3000

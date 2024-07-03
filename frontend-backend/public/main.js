@@ -1,19 +1,13 @@
 const socket = io();
 
 function uploadImage(uploadZone) {
-    // get the file for the specific upload zone
     const fileInput = document.getElementById(`fileInput${uploadZone}`);
   
-    // get the file from the file input
     const file = fileInput.files[0];
   
-    // check for file
-    if (file) { // when a file was selected
-      // create a FormData object to store the file data
+    if (file) {
       const formData = new FormData();
-      // put the file and the 
       formData.append(`image${uploadZone}`, file);
-      // send a POST request to the server with in its body the formdata
       fetch(`/upload/${uploadZone}`, {
         method: "POST",
         body: formData,
@@ -29,18 +23,29 @@ function uploadImage(uploadZone) {
     }
   }
 
+
   socket.on("displayMiniatureView1", (base64Image) => {
     //console.log(base64Image)
     // update the web page
     const im = document.getElementById("miniatureView1");
     im.src = `data:image/png;base64,${base64Image}`;
   });
+  socket.on("displayMiniatureView2", (base64Image) => {
+    //console.log(base64Image)
+    // update the web page
+    const im = document.getElementById("miniatureView2");
+    im.src = `data:image/png;base64,${base64Image}`;
+  });
+  socket.on("displayMiniatureView3", (base64Image) => {
+    //console.log(base64Image)
+    // update the web page
+    const im = document.getElementById("miniatureView3");
+    im.src = `data:image/png;base64,${base64Image}`;
+  });
 
   socket.on("imageUploaded", (data) => {
     console.log(data.upload_zone);
-    if (data.upload_zone == 1) {
       document.getElementById(
-        "miniatureView1"
+        `miniatureView${data.upload_zone}`
       ).src = `data:image/png;base64,${data.image}`;
-    }
   });
