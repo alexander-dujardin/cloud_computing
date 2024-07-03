@@ -53,7 +53,7 @@ const pool = mysql.createPool({
     // perform actions when new user is connected 
     try {
         await Promise.all([
-            updateTotalHeadCount(),
+          displayMiniatureView1(),
         ]);
         console.log('All function executed succesfully');
     } catch (error) {
@@ -73,55 +73,75 @@ app.post('/upload/:uploadZone', async (req, res) => {
   const multerUpload = upload.single(`image${uploadZone}`);
 
   multerUpload(req, res, async (error) => {
-    if (error instanceof multer.MulterError) {
-      console.error('Multer error:', error);
-      return res.status(400).json({ error: 'Bad Request' });
-    } else if (error) {
-      console.error('Unexpected error:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
-
-    // Uploaded file
-    const file = req.file;
-
-    // If a file is uploaded
-    if (file) {
-      const formData = new FormData();
-      formData.append('imageFileField', file.buffer, 'image');
-      const headers = formData.getHeaders();
-
-      try {
-        // Make post request to head counting service
-        const response = await axios.post('http://image-predict-container:8002/crowdy/image/count', formData, { headers });
-        console.log('Head counting response:', response.data.count);
-
-        // Prepare data to save to the MySQL database
-        const image = file.buffer.toString('base64');
-        const creation_date = new Date();
-        const head_count = response.data.count;
-
-        // Save to MySQL database
-        pool.query(
-          'INSERT INTO images_table (image, creation_date, upload_zone, head_count) VALUES (?, ?, ?, ?)',
-          [image, creation_date, uploadZone, head_count],
-          (err, results) => {
-            if (err) {
-              console.error('Database insertion error:', err);
-              return res.status(500).json({ error: 'Database insertion error' });
-            }
-            console.log('Data saved successfully:', results);
-            res.status(200).json({ message: 'Image uploaded and data saved successfully', id: results.insertId });
-          }
-        );
-      } catch (err) {
-        console.error('Error in head counting service:', err);
-        res.status(500).json({ error: 'Error in head counting service' });
+      if (error instanceof multer.MulterError) {
+          console.error('Multer error:', error);
+          return res.status(400).json({ error: 'Bad Request' });
+      } else if (error) {
+          console.error('Unexpected error:', error);
+          return res.status(500).json({ error: 'Internal Server Error' });
       }
-    } else {
-      res.status(400).json({ error: 'No file uploaded' });
-    }
+
+      // Uploaded file
+      const file = req.file;
+
+      // If a file is uploaded
+      if (file) {
+          const formData = new FormData();
+          formData.append('imageFileField', file.buffer, 'image');
+          const headers = formData.getHeaders();
+
+          try {
+              // Make post request to head counting service
+              const response = await axios.post('http://image-predict-container:8002/crowdy/image/count', formData, { headers });
+              console.log('Head counting response:', response.data.count);
+
+              // Prepare data to save to the MySQL database
+              const image = file.buffer.toString('base64');
+              const creation_date = new Date();
+              const head_count = response.data.count;
+
+              // Save to MySQL database
+              pool.query(
+                  'INSERT INTO images_table (image, creation_date, upload_zone, head_count) VALUES (?, ?, ?, ?)',
+                  [image, creation_date, uploadZone, head_count],
+                  (err, results) => {
+                      if (err) {
+                          console.error('Database insertion error:', err);
+                          return res.status(500).json({ error: 'Database insertion error' });
+                      }
+                      console.log('Data saved successfully:', results);
+
+                      // Emit event to notify clients about successful image upload
+                      io.emit('imageUploaded', { image, creation_date, upload_zone: uploadZone, head_count });
+                      res.status(200).json({ message: 'Image uploaded and data saved successfully', id: results.insertId });
+                  }
+              );
+          } catch (err) {
+              console.error('Error in head counting service:', err);
+              res.status(500).json({ error: 'Error in head counting service' });
+          }
+      } else {
+          res.status(400).json({ error: 'No file uploaded' });
+      }
   });
 });
+
+const displayMiniatureView1 = () => {
+  pool.query('SELECT image FROM images_table WHERE upload_zone = 1 ORDER BY creation_date DESC LIMIT 1', (err, result) => {
+      if (err) {
+          console.error('MySQL select error:', err);
+      } else if (result.length > 0) {
+          // Check if the result set is not empty
+          const imageBuffer = Buffer.from(result[0].image, 'base64');
+
+          // Convert Buffer to base64
+          const base64Image = imageBuffer.toString('base64');
+          io.emit('displayMiniatureView1', base64Image);
+      } else {
+          console.log('No data found in the database for the specified condition.');
+      }
+  });
+};
 
 // start http server on port 3000
 server.listen(port, () => {

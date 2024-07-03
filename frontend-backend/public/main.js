@@ -28,3 +28,19 @@ function uploadImage(uploadZone) {
       alert("Select a file before uploading.");
     }
   }
+
+  socket.on("displayMiniatureView1", (base64Image) => {
+    //console.log(base64Image)
+    // update the web page
+    const im = document.getElementById("miniatureView1");
+    im.src = `data:image/png;base64,${base64Image}`;
+  });
+
+  socket.on("imageUploaded", (data) => {
+    console.log(data.upload_zone);
+    if (data.upload_zone == 1) {
+      document.getElementById(
+        "miniatureView1"
+      ).src = `data:image/png;base64,${data.image}`;
+    }
+  });
