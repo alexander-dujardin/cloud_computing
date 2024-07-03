@@ -12,7 +12,7 @@ docker build -t predict-image .
 docker run --network=cloud-computing-network --name=image-predict-container -p 8002:8002 predict-image
 
 docker pull mysql
-docker run --network=cloud-computing-network --name mysql-container -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=images -p 3306:3306 -d mysql:latest
+docker run --network=cloud-computing-network --name mysql-container -e TZ=Europe/Brussels -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=images -p 3306:3306 -d mysql:latest
 docker exec -it mysql-container mysql -uroot -p
 USE images;
 CREATE TABLE images_table (

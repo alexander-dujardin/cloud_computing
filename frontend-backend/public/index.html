@@ -11,6 +11,8 @@
 	<body>
 		<!-- overall total head count -->
 		<p>Total Head Count: <span id="totalHeadCount">0</span></p>
+		<!-- display the overall total head count of the last 30 seconds-->
+		<p>Total Head Count (Last 30s): <span id="totalHeadCountLast30">0</span></p>
 		<div class="camera-zone">
 			<!-- city region 1 -->
 			<h1>City Region 1</h1>
@@ -53,8 +55,13 @@
 			<!-- last head count camera 3 -->
 			<p>Last Head Count: <span id="lastHeadCount3">0</span></p>
 		</div>
+		<!-- 2D chart-->
+		<div class="chart">
+			<canvas id="headCountChart"></canvas>
+		</div>
 		<!-- scripts -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<script src="main.js"></script>
 	</body>
 </html>

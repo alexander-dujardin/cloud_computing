@@ -186,6 +186,23 @@ const updateTotalHeadCount = () => {
   });
 };
 
+const getLast30 = () => {
+  pool.query('SELECT SUM(head_count) AS count FROM images_table WHERE creation_date >= NOW() - INTERVAL 30 SECOND', (err, result) => {
+    if (err) {
+      console.error('MySQL select error:', err);
+    } else {
+      const headCountLast30 = result[0].count;
+      io.emit('getLast30', headCountLast30);
+      console.log(headCountLast30);
+    }
+  });
+};
+
+const emitLast30HeadCount = () => {
+  getLast30();
+};
+setInterval(emitLast30HeadCount, 30000);
+
 // start http server on port 3000
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

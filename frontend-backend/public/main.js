@@ -54,3 +54,49 @@ socket.on("imageUploaded", (data) => {
   const currentSum = parseInt(totalHeadCountSpan.textContent, 10);
   totalHeadCountSpan.textContent = currentSum + data.head_count;
 });
+
+const ctx = document.getElementById("headCountChart").getContext("2d");
+const headCountChart = new Chart(ctx, {
+  type: "bar",
+  data: {
+    labels: [],
+    datasets: [
+      {
+        label: "Head Count",
+        data: [],
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  },
+});
+
+const headCountHistory = [];
+
+const updateChart = (headCountLast30) => {
+  headCountHistory.push(headCountLast30);
+
+  headCountChart.data.labels = headCountHistory.map((_, index) => `Interval ${index + 1}`);
+  headCountChart.data.datasets[0].data = headCountHistory;
+
+  headCountChart.update();
+};
+
+socket.on("getLast30", (headCountLast30) => {
+  if (headCountLast30 > 0) {
+    document.getElementById("totalHeadCountLast30").innerText = headCountLast30;
+    updateChart(headCountLast30);
+  } else {
+    headCountLast30 = 0;
+    document.getElementById("totalHeadCountLast30").innerText = headCountLast30;
+    updateChart(headCountLast30);
+  }
+});
