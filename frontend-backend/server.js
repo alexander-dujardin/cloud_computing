@@ -57,7 +57,11 @@ io.on('connection', async (socket) => {
     await Promise.all([
       displayMiniatureView(1),
       displayMiniatureView(2),
-      displayMiniatureView(3)
+      displayMiniatureView(3),
+      displayLastCityCamera(1),
+      displayLastCityCamera(2),
+      displayLastCityCamera(3),
+      updateTotalHeadCount(),
     ]);
     console.log('All function executed succesfully');
   } catch (error) {
@@ -150,6 +154,34 @@ const displayMiniatureView = (uploadZone) => {
       io.emit(`displayMiniatureView${uploadZone}`, base64Image);
     } else {
       console.log('No data found in the database for the specified condition.');
+    }
+  });
+};
+
+const displayLastCityCamera = (uploadZone) => {
+  pool.query(
+    'SELECT head_count AS count FROM images_table WHERE upload_zone = ? ORDER BY creation_date DESC LIMIT 1', 
+    [uploadZone], 
+    (err, result) => {
+      if (err) {
+        console.error('MySQL select error:', err);
+      } else if (result.length > 0) {
+        const headCount = result[0].count;
+        io.emit(`displayLastCityCamera${uploadZone}`, headCount);
+      } else {
+        console.log('No data found in the database for the specified condition.');
+      }
+    }
+  );
+};
+
+const updateTotalHeadCount = () => {
+  pool.query('SELECT SUM(head_count) AS count FROM images_table', (err, result) => {
+    if (err) {
+      console.error('MySQL select error:', err);
+    } else {
+      const updateTotalHeadCount = result[0].count;
+      io.emit('updateTotalHeadCount', updateTotalHeadCount);
     }
   });
 };
