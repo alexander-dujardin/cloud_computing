@@ -26,7 +26,7 @@ function setMiniatureView(elementId, base64Image) {
   document.getElementById(elementId).src = `data:image/png;base64,${base64Image}`;
 }
 
-const uploadZoneIds = [1, 2, 3]; // Range of IDs
+const uploadZoneIds = [1, 2, 3]; // range of IDs
 
 uploadZoneIds.forEach(id => {
   socket.on(`displayMiniatureView${id}`, (base64Image) => {
