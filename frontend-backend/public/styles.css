@@ -1,0 +1,26 @@
+/* styles.css */
+
+body {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+form {
+    margin-bottom: 10px;
+}
+
+.miniatureview {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+}
+
+.camera-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 30%;
+}
