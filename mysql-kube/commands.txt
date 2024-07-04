@@ -1,0 +1,37 @@
+kubectl apply -f mysql-pv.yaml
+kubectl apply -f mysql-pvc.yaml
+kubectl apply -f mysql-configmap.yaml
+kubectl apply -f mysql-deployment.yaml
+kubectl apply -f mysql-service.yaml
+
+C:\Users\alexa\Desktop\cloud-computing\mysql-kube>kubectl get deployments
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+mysql   1/1     1            1           56s
+
+C:\Users\alexa\Desktop\cloud-computing\mysql-kube>kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+mysql-67764cf95b-l745d   1/1     Running   0          58s
+
+C:\Users\alexa\Desktop\cloud-computing\mysql-kube>kubectl get services
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP    118m
+mysql        ClusterIP   10.101.175.254   <none>        3306/TCP   61s
+
+
+kubectl exec -it mysql-67764cf95b-l745d -- mysql -uroot -p
+
+mysql> USE images;
+Database changed
+mysql> CREATE TABLE images_table (
+    ->     id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     image LONGTEXT NOT NULL,
+    ->     creation_date DATETIME NOT NULL,
+    ->     upload_zone INT NOT NULL,
+    ->     head_count INT NOT NULL
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+
+
+
+for a client (mysql cli): kubectl port-forward svc/mysql 3306:3306 and mysql -h 127.0.0.1 -P 3306 -u root -p
