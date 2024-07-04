@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-backend
+  template:
+    metadata:
+      labels:
+        app: frontend-backend
+    spec:
+      containers:
+        - name: frontend-backend
+          image: front-backend-image
+          imagePullPolicy: Never  # This should be "Always" for production; "Never" is for local testing
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: "mysql"  # Should match the name of your MySQL service in Kubernetes
+            - name: DB_USER
+              value: "root"
+            - name: DB_PASSWORD
+              value: "root"
+            - name: DB_NAME
+              value: "images"
+            - name: TZ  # Adding timezone environment variable
+              value: "Europe/Brussels"  # Adjust this to your timezone
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-backend-service
+spec:
+  selector:
+    app: frontend-backend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

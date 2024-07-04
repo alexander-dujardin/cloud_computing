@@ -20,7 +20,7 @@ const upload = multer({
 
 app.use(express.static('public'));
 
-/*
+/* TESTING LOCALLY
 
 // connection to MySQL database
 const db = mysql.createConnection({
@@ -41,11 +41,24 @@ connectToDb();
 
 */
 
+/* TESTING VIA DOCKER CONTAINERS
 const pool = mysql.createPool({
   host: 'mysql-container',
   user: 'root',
   password: 'root',
   database: 'images',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+*/
+
+// MYSQL IN K8S
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'mysql',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'root',
+  database: process.env.DB_NAME || 'images',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -97,7 +110,8 @@ app.post('/upload/:uploadZone', async (req, res) => {
       const headers = formData.getHeaders();
 
       try {
-        const response = await axios.post('http://image-predict-container:8002/crowdy/image/count', formData, {
+        //const response = await axios.post('http://image-predict-container:8002/crowdy/image/count', formData, {
+        const response = await axios.post('http://image-predict-service:8002/crowdy/image/count', formData, {
           headers
         });
         console.log('Head counting response:', response.data.count);

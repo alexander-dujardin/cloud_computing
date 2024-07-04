@@ -18,7 +18,7 @@ kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP    118m
 mysql        ClusterIP   10.101.175.254   <none>        3306/TCP   61s
 
 
-kubectl exec -it mysql-67764cf95b-l745d -- mysql -uroot -p
+kubectl exec -it mysql-68fc744f69-9gzb4 -- mysql -uroot -p
 
 mysql> USE images;
 Database changed
