@@ -27,3 +27,37 @@ CREATE TABLE images_table (
 kubectl exec -it frontend-backend-5875b64dbf-lbq6h -- bash
 
 minikube service --all
+-------------------------------------------------------------------------------------
+cd mysql-kube
+kubectl apply -f mysql-pv.yaml
+kubectl apply -f mysql-pvc.yaml
+kubectl apply -f mysql-configmap.yaml
+kubectl apply -f mysql-deployment.yaml
+kubectl apply -f mysql-service.yaml
+
+kubectl get all
+
+kubectl exec -it <pod name> -- mysql -uroot -p
+
+USE images;
+CREATE TABLE images_table (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    image LONGTEXT NOT NULL,
+    creation_date DATETIME NOT NULL,
+    upload_zone INT NOT NULL,
+    head_count INT NOT NULL
+);
+
+cd image-predict
+
+kubectl apply -f image-predict-deployment.yaml
+
+kubectl get all
+
+cd frontend-backend
+
+kubectl apply -f frontend-backend-deployment.yaml
+
+kubectl get all
+
+minikube service --all (minikube tunnel)
