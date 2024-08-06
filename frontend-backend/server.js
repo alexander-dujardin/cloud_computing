@@ -79,6 +79,7 @@ io.on('connection', async (socket) => {
     console.log('All function executed succesfully');
   } catch (error) {
     console.error('Error executing functions: ', error);
+    socket.emit('dbError', 'Error executing functions');
   }
   socket.on('disconnect', () => {
     console.log('User is disconnected');
@@ -147,7 +148,7 @@ app.post('/upload/:uploadZone', async (req, res) => {
       } catch (err) {
         console.error('Error in head counting service:', err);
         res.status(500).json({
-          error: 'Error in head counting service'
+          error: 'External error in head counting service, please try again later'
         });
       }
     } else {
@@ -162,6 +163,7 @@ const displayMiniatureView = (uploadZone) => {
   pool.query('SELECT image FROM images_table WHERE upload_zone = ? ORDER BY creation_date DESC LIMIT 1', [uploadZone], (err, result) => {
     if (err) {
       console.error('MySQL select error:', err);
+      io.emit('dbError', 'Database error: try again later');
     } else if (result.length > 0) {
       const imageBuffer = Buffer.from(result[0].image, 'base64');
       const base64Image = imageBuffer.toString('base64');
@@ -179,6 +181,7 @@ const displayLastCityCamera = (uploadZone) => {
     (err, result) => {
       if (err) {
         console.error('MySQL select error:', err);
+        io.emit('dbError', 'Database error: try again later');
       } else if (result.length > 0) {
         const headCount = result[0].count;
         io.emit(`displayLastCityCamera${uploadZone}`, headCount);
@@ -193,6 +196,7 @@ const updateTotalHeadCount = () => {
   pool.query('SELECT SUM(head_count) AS count FROM images_table', (err, result) => {
     if (err) {
       console.error('MySQL select error:', err);
+      io.emit('dbError', 'Database error: try again later');
     } else {
       const updateTotalHeadCount = result[0].count;
       io.emit('updateTotalHeadCount', updateTotalHeadCount);

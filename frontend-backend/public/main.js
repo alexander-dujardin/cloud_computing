@@ -1,8 +1,19 @@
 const socket = io();
 
+function displayError(message) {
+  const notificationArea = document.getElementById('notificationArea');
+  notificationArea.textContent = message;
+  notificationArea.classList.remove('hidden');
+  notificationArea.classList.add('visible');
+  
+  setTimeout(() => {
+    notificationArea.classList.remove('visible');
+    notificationArea.classList.add('hidden');
+  }, 7000);
+}
+
 function uploadImage(uploadZone) {
   const fileInput = document.getElementById(`fileInput${uploadZone}`);
-
   const file = fileInput.files[0];
 
   if (file) {
@@ -12,15 +23,29 @@ function uploadImage(uploadZone) {
         method: "POST",
         body: formData,
       })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((errorData) => {
+            throw new Error(errorData.error || 'Unknown error occurred.');
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Image uploaded successfully:", data);
+        // Reset the form or perform other actions on success
+      })
       .catch((error) => {
         console.error("Error:", error);
+        displayError(`Error: ${error.message}`);
       });
   } else {
     console.error("No file selected.");
-    alert("Select a file before uploading.");
+    displayError("Select a file before uploading.");
   }
 }
+
+
 
 function setMiniatureView(elementId, base64Image) {
   document.getElementById(elementId).src = `data:image/png;base64,${base64Image}`;
@@ -99,4 +124,14 @@ socket.on("getLast30", (headCountLast30) => {
     document.getElementById("totalHeadCountLast30").innerText = headCountLast30;
     updateChart(headCountLast30);
   }
+});
+
+socket.on('dbError', (message) => {
+  displayError(message);
+  // Clear the images and counts if needed
+  uploadZoneIds.forEach(id => {
+    setMiniatureView(`miniatureView${id}`, ''); // Clear image
+    setLastCount(`lastHeadCount${id}`, ''); // Clear count
+  });
+  document.getElementById('totalHeadCountLast30').innerText = '';
 });

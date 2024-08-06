@@ -14,14 +14,32 @@ spec:
     spec:
       containers:
         - name: image-predict
-          image: predict-image:latest  # Update with your Docker image tag
+          image: image-predict  # Update with your Docker image tag
           imagePullPolicy: Never
           ports:
             - containerPort: 8002  # Port your Node.js app is listening on
           env:
             - name: TZ
               value: "Europe/Brussels"  # Adjust timezone if needed
+          resources:
+            requests:
+              memory: "512Mi"  # Requesting 512Mi of memory
+              cpu: "500m"       # Requesting 500 millicores of CPU
+            limits:
+              memory: "3Gi"  # Setting a limit of 1024Mi of memory
+              cpu: "3"      # Setting a limit of 1000 millicores (1 core)
 ---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: image-predict-service
+#spec:
+#  selector:
+#    app: image-predict # Label selector matching the pods
+#  ports:
+#    - protocol: TCP
+#      port: 8002
+#      targetPort: 8002
 apiVersion: v1
 kind: Service
 metadata:
@@ -33,3 +51,4 @@ spec:
     - protocol: TCP
       port: 8002
       targetPort: 8002
+  type: LoadBalancer

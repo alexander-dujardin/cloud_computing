@@ -15,29 +15,37 @@ spec:
       containers:
         - name: frontend-backend
           image: front-backend-image
-          imagePullPolicy: Never  # This should be "Always" for production; "Never" is for local testing
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           env:
             - name: DB_HOST
-              value: "mysql"  # Should match the name of your MySQL service in Kubernetes
+              value: "mysql"
             - name: DB_USER
               value: "root"
             - name: DB_PASSWORD
               value: "root"
             - name: DB_NAME
               value: "images"
-            - name: TZ  # Adding timezone environment variable
-              value: "Europe/Brussels"  # Adjust this to your timezone
+            - name: TZ
+              value: "Europe/Brussels"
+          resources:  # Define resource requests and limits
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: front-backend-service
 spec:
+  type: LoadBalancer  # or NodePort, depending on your use case
   selector:
     app: frontend-backend
   ports:
     - protocol: TCP
-      port: 3000
+      port: 3000  # Expose on port 80 for convenience
       targetPort: 3000

@@ -78,3 +78,15 @@ input[type="file"] {
 canvas {
     max-width: 100%;
 }
+
+.hidden {
+    display: none;
+  }
+  
+  .visible {
+    display: block;
+    background-color: #f44336; /* Red */
+    color: white;
+    padding: 15px;
+    margin: 10px 0;
+  }
