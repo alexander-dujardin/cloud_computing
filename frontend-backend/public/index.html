@@ -10,13 +10,14 @@
     </head>
     <body>
         <div class="container">
+            <!-- pop up notificiations to user -->
             <div id="notificationArea" class="hidden"></div>
             <header>
                 <h1>Dashboard</h1>
 				<!-- overall total head count -->
                 <p>Total Head Count: <span id="totalHeadCount">0</span></p>
 				<!-- display the overall total head count of the last 30 seconds-->
-                <p>Total Head Count (Last 30s): <span id="totalHeadCountLast30">0</span></p>
+                <p>Total Head Count (Last 30 sec): <span id="totalHeadCountLast30">0</span></p>
             </header>
             <div class="camera-zones">
                 <div class="camera-zone">
@@ -62,7 +63,7 @@
                     <p>Last Head Count: <span id="lastHeadCount3">0</span></p>
                 </div>
             </div>
-			<!-- 2D chart-->
+			<!-- live 2D chart-->
             <div class="chart">
                 <canvas id="headCountChart"></canvas>
             </div>
