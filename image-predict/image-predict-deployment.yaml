@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: image-predict
 spec:
-  replicas: 1  # Adjust the number of replicas as needed
+  replicas: 1
   selector:
     matchLabels:
       app: image-predict
@@ -14,39 +14,28 @@ spec:
     spec:
       containers:
         - name: image-predict
-          image: image-predict  # Update with your Docker image tag
+          image: image-predict
           imagePullPolicy: Never
           ports:
-            - containerPort: 8002  # Port your Node.js app is listening on
+            - containerPort: 8002
           env:
             - name: TZ
-              value: "Europe/Brussels"  # Adjust timezone if needed
+              value: "Europe/Brussels"
           resources:
             requests:
-              memory: "512Mi"  # Requesting 512Mi of memory
-              cpu: "500m"       # Requesting 500 millicores of CPU
+              memory: "512Mi"
+              cpu: "500m"
             limits:
-              memory: "3Gi"  # Setting a limit of 1024Mi of memory
-              cpu: "3"      # Setting a limit of 1000 millicores (1 core)
+              memory: "3Gi"
+              cpu: "3"
 ---
-#apiVersion: v1
-#kind: Service
-#metadata:
-#  name: image-predict-service
-#spec:
-#  selector:
-#    app: image-predict # Label selector matching the pods
-#  ports:
-#    - protocol: TCP
-#      port: 8002
-#      targetPort: 8002
 apiVersion: v1
 kind: Service
 metadata:
   name: image-predict-service
 spec:
   selector:
-    app: image-predict # Label selector matching the pods
+    app: image-predict
   ports:
     - protocol: TCP
       port: 8002
