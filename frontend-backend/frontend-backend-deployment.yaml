@@ -29,7 +29,7 @@ spec:
               value: "images"
             - name: TZ
               value: "Europe/Brussels"
-          resources:  # Define resource requests and limits
+          resources:
             requests:
               memory: "512Mi"
               cpu: "500m"
@@ -42,10 +42,10 @@ kind: Service
 metadata:
   name: front-backend-service
 spec:
-  type: LoadBalancer  # or NodePort, depending on your use case
+  type: LoadBalancer
   selector:
     app: frontend-backend
   ports:
     - protocol: TCP
-      port: 3000  # Expose on port 80 for convenience
+      port: 3000
       targetPort: 3000
