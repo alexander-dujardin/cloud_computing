@@ -1,24 +1,31 @@
 const socket = io();
 
+// function for display notifications on the user interface
 function displayError(message) {
-  const notificationArea = document.getElementById('notificationArea');
+  const notificationArea = document.getElementById('notificationArea'); // where to show in html
   notificationArea.textContent = message;
+  // make it visible
   notificationArea.classList.remove('hidden');
   notificationArea.classList.add('visible');
   
+  // after 7 seconds make it hidden
   setTimeout(() => {
     notificationArea.classList.remove('visible');
     notificationArea.classList.add('hidden');
   }, 7000);
 }
 
+// function when a new image is uploaded (button clicked)
 function uploadImage(uploadZone) {
-  const fileInput = document.getElementById(`fileInput${uploadZone}`);
-  const file = fileInput.files[0];
+  const fileInput = document.getElementById(`fileInput${uploadZone}`); // get input data
+  const file = fileInput.files[0]; // get file
 
+  // check if a file is uploaded
   if (file) {
+    // make a formdata object
     const formData = new FormData();
     formData.append(`image${uploadZone}`, file);
+    // make HTTP POST to backend
     fetch(`/upload/${uploadZone}`, {
         method: "POST",
         body: formData,
@@ -31,32 +38,32 @@ function uploadImage(uploadZone) {
         }
         return response.json();
       })
-      .then((data) => {
+      .then((data) => { // information on console
         console.log("Image uploaded successfully:", data);
-        // Reset the form or perform other actions on success
       })
-      .catch((error) => {
+      .catch((error) => { // display error coming from backend server
         console.error("Error:", error);
         displayError(`Error: ${error.message}`);
       });
-  } else {
+  } else { // when no file is selected, but upload button is clicked
     console.error("No file selected.");
     displayError("Select a file before uploading.");
   }
 }
 
-
-
+// change the html element of the last image to a new image
 function setMiniatureView(elementId, base64Image) {
   document.getElementById(elementId).src = `data:image/png;base64,${base64Image}`;
 }
 
+// change the html element of the last head count to the new last head count
 function setLastCount(elementId, lastHeadCount) {
   document.getElementById(elementId).innerText = lastHeadCount;
 }
 
-const uploadZoneIds = [1, 2, 3]; // range of IDs
+const uploadZoneIds = [1, 2, 3]; // range of city regions
 
+// when client connects, run all these functions for all city regions
 uploadZoneIds.forEach(id => {
   socket.on(`displayMiniatureView${id}`, (base64Image) => {
     setMiniatureView(`miniatureView${id}`, base64Image);
@@ -66,10 +73,12 @@ uploadZoneIds.forEach(id => {
   });
 });
 
+// change the html element of the total head count to the new total head count
 socket.on("updateTotalHeadCount", (totalHeadCount) => {
   document.getElementById("totalHeadCount").innerText = totalHeadCount;
 });
 
+// when image is uploaded, change all information to the new information of the uploaded image
 socket.on("imageUploaded", (data) => {
   setMiniatureView(`miniatureView${data.upload_zone}`, data.image);
 
@@ -80,7 +89,10 @@ socket.on("imageUploaded", (data) => {
   totalHeadCountSpan.textContent = currentSum + data.head_count;
 });
 
+// creation of the real time chart
 const ctx = document.getElementById("headCountChart").getContext("2d");
+
+// specifications of the chart
 const headCountChart = new Chart(ctx, {
   type: "bar",
   data: {
@@ -104,8 +116,10 @@ const headCountChart = new Chart(ctx, {
   },
 });
 
+// head counts last 30 second interval
 const headCountHistory = [];
 
+// update the real time chart, with a new interval
 const updateChart = (headCountLast30) => {
   headCountHistory.push(headCountLast30);
 
@@ -126,12 +140,13 @@ socket.on("getLast30", (headCountLast30) => {
   }
 });
 
+// when there is a database error emited, we will show this and empty all information that should be displayed
 socket.on('dbError', (message) => {
   displayError(message);
-  // Clear the images and counts if needed
+
   uploadZoneIds.forEach(id => {
-    setMiniatureView(`miniatureView${id}`, ''); // Clear image
-    setLastCount(`lastHeadCount${id}`, ''); // Clear count
+    setMiniatureView(`miniatureView${id}`, '');
+    setLastCount(`lastHeadCount${id}`, '');
   });
   document.getElementById('totalHeadCountLast30').innerText = '';
 });
